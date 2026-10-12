@@ -54,9 +54,20 @@ export async function authenticate(): Promise<any> {
   }
   
   // No valid tokens, need to authenticate
+  // A refresh that failed for network reasons (proxy down / at its connection cap,
+  // ECONNREFUSED, timeout) must NOT fall through to the interactive browser flow:
+  // inside an MCP tool call nobody can complete it, so the call would hang until the
+  // client's idle timeout. Fail fast and keep the saved tokens for the next attempt.
+  if (tokenManager.lastRefreshError) {
+    const e = tokenManager.lastRefreshError as any;
+    const why = e?.code || e?.response?.status || e?.message || String(e);
+    throw new Error(`Google OAuth token refresh failed (${why}). This is a network/proxy error, not an authorization problem: the saved tokens were kept and the interactive browser login was NOT started. Retry the call later; if it keeps failing run "google-drive-mcp auth".`);
+  }
+
   console.error('\n🔐 No valid authentication tokens found.');
   console.error('Starting authentication flow...\n');
   
+
   const authServer = new AuthServer(oauth2Client);
   const authSuccess = await authServer.start(true);
   

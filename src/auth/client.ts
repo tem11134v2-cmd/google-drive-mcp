@@ -1,4 +1,6 @@
 import { OAuth2Client } from 'google-auth-library';
+import { loadRuntimeConfig } from '../utils/cliArgs.js';
+import { gaxiosOptions } from '../utils/gaxiosOptions.js';
 import * as fs from 'fs/promises';
 import { getKeysFilePaths, generateCredentialsErrorMessage, OAuthCredentials } from './utils.js';
 
@@ -76,6 +78,8 @@ export async function initializeOAuth2Client(): Promise<OAuth2Client> {
       clientId: credentials.client_id,
       clientSecret: credentials.client_secret || undefined,
       redirectUri: credentials.redirect_uris?.[0] || 'http://127.0.0.1:3000/oauth2callback',
+      // Token refresh goes through the same timeout/retry policy as API calls.
+      transporterOptions: gaxiosOptions(loadRuntimeConfig()),
     });
   } catch (error) {
     throw new Error(`Error loading OAuth keys: ${error instanceof Error ? error.message : error}`);

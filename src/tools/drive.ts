@@ -1190,8 +1190,12 @@ export async function handleTool(
       }
 
       const stats = statSync(data.localPath);
-      const fileName = data.name || data.localPath.split(/[\\/]/).pop() || 'upload';
-      const ext = fileName.split('.').pop()?.toLowerCase() || '';
+      // MIME type comes from the LOCAL file's extension; `name` may be a display name
+      // without an extension (e.g. "A6_ibgproperty-com" + convertToGoogleFormat).
+      const localBaseName = data.localPath.split(/[\/]/).pop() || 'upload';
+      const fileName = data.name || localBaseName;
+      const extOf = (n: string) => n.includes('.') ? n.split('.').pop()?.toLowerCase() || '' : '';
+      const ext = extOf(localBaseName) || extOf(fileName);
       const detectedMime = data.mimeType || BINARY_MIME_TYPES[ext] || 'application/octet-stream';
       const parentId = await ctx.resolveFolderId(data.parentFolderId);
 

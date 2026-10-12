@@ -158,6 +158,9 @@ export class TokenManager {
     }
   }
 
+  /** Set when the last refresh failed for a reason other than invalid_grant (network/proxy/5xx). */
+  lastRefreshError: unknown = undefined;
+
   async refreshTokensIfNeeded(): Promise<boolean> {
     const expiryDate = this.oauth2Client.credentials.expiry_date;
     const isExpired = expiryDate
@@ -186,6 +189,7 @@ export class TokenManager {
         } else {
             // Handle other refresh errors
             console.error("Error refreshing auth token:", refreshError);
+            this.lastRefreshError = refreshError;
             return false;
         }
       }

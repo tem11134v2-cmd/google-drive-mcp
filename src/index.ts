@@ -25,6 +25,7 @@ import {
 import type { ToolContext } from './types.js';
 import { errorResponse } from './types.js';
 import { loadRuntimeConfig, type RuntimeConfig } from './utils/cliArgs.js';
+import { gaxiosOptions } from './utils/gaxiosOptions.js';
 
 import * as driveTools from './tools/drive.js';
 import * as docsTools from './tools/docs.js';
@@ -40,7 +41,7 @@ let _lastAuthClient: any = null;
 function getDrive(): drive_v3.Drive {
   if (!authClient) throw new Error('Authentication required');
   if (_drive && _lastAuthClient === authClient) return _drive;
-  _drive = google.drive({ version: 'v3', auth: authClient });
+  _drive = google.drive({ version: 'v3', auth: authClient, ...gaxiosOptions(runtimeConfig, log) });
   log('Drive service created');
   return _drive;
 }
@@ -48,7 +49,7 @@ function getDrive(): drive_v3.Drive {
 function getCalendar(): calendar_v3.Calendar {
   if (!authClient) throw new Error('Authentication required');
   if (_calendar && _lastAuthClient === authClient) return _calendar;
-  _calendar = google.calendar({ version: 'v3', auth: authClient });
+  _calendar = google.calendar({ version: 'v3', auth: authClient, ...gaxiosOptions(runtimeConfig, log) });
   log('Calendar service created');
   return _calendar;
 }
